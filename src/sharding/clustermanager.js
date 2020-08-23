@@ -45,15 +45,9 @@ class ClusterManager extends EventEmitter {
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.guildsPerShard = options.guildsPerShard || 1300;
-
-        this.webhooks = Object.assign({
-            cluster: undefined,
-            shard: undefined
-        }, options.webhooks);
-
+        this.totalCounterUpdates = 0;
 
         this.clientOptions = options.clientOptions || {};
-
 
         if (options.stats === true) {
             this.stats = {

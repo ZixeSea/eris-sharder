@@ -1,11 +1,4 @@
-let Eris;
-
-try {
-    Eris = require("eris-additions")(require("eris"));
-} catch (err) {
-    Eris = require("eris");
-}
-
+const Eris = require("eris");
 const Base = require("../structures/Base.js");
 const SyncedRequestHandler = require('../structures/SyncedRequestHandler.js');
 const { inspect } = require('util');
@@ -24,24 +17,24 @@ class Cluster {
      * @memberof Cluster
      */
     constructor() {
-
-        this.shards = 0;
-        this.maxShards = 0;
-        this.firstShardID = 0;
-        this.lastShardID = 0;
-        this.mainFile = null;
-        this.clusterID = 0;
-        this.clusterCount = 0;
-        this.guilds = 0;
-        this.users = 0;
-        this.uptime = 0;
-        this.exclusiveGuilds = 0;
-        this.largeGuilds = 0;
-        this.voiceChannels = 0;
-        this.shardsStats = [];
-        this.app = null;
-        this.bot = null;
-        this.test = false;
+		this.shards = 0;
+		this.maxShards = 0;
+		this.firstShardID = 0;
+		this.lastShardID = 0;
+		this.mainFile = null;
+		this.clusterID = 0;
+		this.clusterCount = 0;
+		this.guilds = 0;
+		this.users = 0;
+		this.exclusiveGuilds = 0;
+		this.largeGuilds = 0;
+		this.counterUpdates = 0;
+		this.clusterUptime = 0;
+		this.botUptime = 0;
+		this.shardsStats = [];
+		this.app = null;
+		this.bot = null;
+		this.test = false;
 
         this.ipc = new IPC();
 
@@ -93,17 +86,22 @@ class Cluster {
                     case "stats": {
                         process.send({
                             name: "stats", stats: {
-                                guilds: this.guilds,
-                                users: this.users,
-                                uptime: this.uptime,
-                                ram: process.memoryUsage().rss,
-                                shards: this.shards,
-                                exclusiveGuilds: this.exclusiveGuilds,
-                                largeGuilds: this.largeGuilds,
-                                voice: this.voiceChannels,
-                                shardsStats: this.shardsStats
+								guilds: this.guilds,
+								users: this.users,
+								ram: process.memoryUsage().rss,
+								shards: this.shards,
+								exclusiveGuilds: this.exclusiveGuilds,
+								largeGuilds: this.largeGuilds,
+								counterUpdates: this.counterUpdates,
+								clusterUptime: this.clusterUptime,
+								botUptime: this.botUptime,
+								shardsStats: this.shardsStats
                             }
                         });
+
+                        if (this.counterUpdates > 0) {
+							this.counterUpdates = -1;
+						}
 
                         break;
                     }
@@ -276,24 +274,27 @@ class Cluster {
 
     startStats(bot) {
         setInterval(() => {
-            this.guilds = bot.guilds.size;
-            this.users = bot.users.size;
-            this.uptime = bot.uptime;
-            this.voiceChannels = bot.voiceConnections.size;
-            this.largeGuilds = bot.guilds.filter(g => g.large).length;
-            this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
-            this.shardsStats = [];
-            this.bot.shards.forEach(shard => {
-                this.shardsStats.push({
-                    id: shard.id,
-                    ready: shard.ready,
-                    latency: shard.latency,
-                    status: shard.status
-                });
-            });
+			this.guilds = bot.guilds.size;
+			this.users = bot.users.size;
+			this.largeGuilds = bot.guilds.filter((g) => g.large).length;
+			this.exclusiveGuilds = bot.guilds.filter((g) => g.members.filter((m) => m.bot).length === 1).length;
+			if (this.counterUpdates === -1) {
+				bot.stats.counterUpdates = 0;
+			}
+			this.counterUpdates = !bot.stats ? 0 : bot.stats.counterUpdates;
+			this.clusterUptime = Math.round(process.uptime() * 1000);
+			this.botUptime = bot.uptime;
+			this.shardsStats = [];
+			this.bot.shards.forEach((shard) => {
+				this.shardsStats.push({
+					id: shard.id,
+					ready: shard.ready,
+					latency: shard.latency,
+					status: shard.status
+				});
+			});
         }, 1000 * 5);
     }
 }
-
 
 module.exports = Cluster;

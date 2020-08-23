@@ -5,7 +5,6 @@ const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
 const Eris = require("eris");
 const Queue = require("../utils/queue.js");
-const pkg = require("../../package.json")
 
 /**
  * 
@@ -58,16 +57,18 @@ class ClusterManager extends EventEmitter {
 
         if (options.stats === true) {
             this.stats = {
-                stats: {
-                    guilds: 0,
-                    users: 0,
-                    totalRam: 0,
-                    voice: 0,
-                    exclusiveGuilds: 0,
-                    largeGuilds: 0,
-                    clusters: []
-                },
-                clustersCounted: 0
+				stats: {
+					guilds: 0,
+					users: 0,
+					totalRam: 0,
+					exclusiveGuilds: 0,
+					largeGuilds: 0,
+					counterUpdates: 0,
+					clusterUptime: 0,
+					botUptime: 0,
+					clusters: []
+				},
+				clustersCounted: 0
             }
         }
 
@@ -86,18 +87,19 @@ class ClusterManager extends EventEmitter {
     startStats() {
         if (this.statsInterval != null) {
             setInterval(() => {
-                this.stats.stats.guilds = 0;
-                this.stats.stats.users = 0;
-                this.stats.stats.totalRam = 0;
-                this.stats.stats.clusters = [];
-                this.stats.stats.voice = 0;
-                this.stats.stats.exclusiveGuilds = 0;
-                this.stats.stats.largeGuilds = 0;
-                this.stats.clustersCounted = 0;
+				this.stats.stats.totalGuilds = 0;
+				this.stats.stats.totalUsers = 0;
+				this.stats.stats.totalRam = 0;
+				this.stats.stats.totalShards = 0;
+				this.stats.stats.clusters = [];
+				this.stats.stats.totalExclusiveGuilds = 0;
+				this.stats.stats.totalLargeGuilds = 0;
+				this.stats.stats.totalCounterUpdates = 0;
+				this.stats.clustersCounted = 0;
 
-                let clusters = Object.entries(master.workers);
+				let clusters = Object.entries(master.workers);
 
-                this.executeStats(clusters, 0);
+				this.executeStats(clusters, 0);
             }, this.statsInterval);
         }
     }
@@ -236,26 +238,28 @@ class ClusterManager extends EventEmitter {
                         this.sendWebhook("shard", message.embed);
                         break;
                     case "stats":
-                        this.stats.stats.guilds += message.stats.guilds;
-                        this.stats.stats.users += message.stats.users;
-                        this.stats.stats.voice += message.stats.voice;
-                        this.stats.stats.totalRam += message.stats.ram;
-                        let ram = message.stats.ram / 1000000;
-                        this.stats.stats.exclusiveGuilds += message.stats.exclusiveGuilds;
-                        this.stats.stats.largeGuilds += message.stats.largeGuilds;
-                        this.stats.stats.clusters.push({
-                            cluster: clusterID,
-                            shards: message.stats.shards,
-                            guilds: message.stats.guilds,
-                            ram: ram,
-                            voice: message.stats.voice,
-                            uptime: message.stats.uptime,
-                            exclusiveGuilds: message.stats.exclusiveGuilds,
-                            largeGuilds: message.stats.largeGuilds,
-                            shardsStats: message.stats.shardsStats
-                        });
+						this.stats.stats.totalGuilds += message.stats.guilds;
+						this.stats.stats.totalUsers += message.stats.users;
+						this.stats.stats.totalRam += message.stats.ram;
+						let ram = message.stats.ram / 1000000;
+						this.stats.stats.totalShards += message.stats.shards;
+						this.stats.stats.totalExclusiveGuilds += message.stats.exclusiveGuilds;
+						this.stats.stats.totalLargeGuilds += message.stats.largeGuilds;
+						this.totalCounterUpdates += message.stats.counterUpdates;
+						this.stats.stats.totalCounterUpdates = this.totalCounterUpdates;
+						this.stats.stats.clusters.push({
+							cluster: clusterID,
+							shards: message.stats.shards,
+							guilds: message.stats.guilds,
+							ram: ram,
+							exclusiveGuilds: message.stats.exclusiveGuilds,
+							largeGuilds: message.stats.largeGuilds,
+							clusterUptime: message.stats.clusterUptime,
+							botUptime: message.stats.botUptime,
+							shardsStats: message.stats.shardsStats
+						});
 
-                        this.stats.clustersCounted += 1;
+						this.stats.clustersCounted += 1;
 
                         if (this.stats.clustersCounted === this.clusters.size) {
                             function compare(a, b) {
@@ -269,13 +273,14 @@ class ClusterManager extends EventEmitter {
                             let clusters = this.stats.stats.clusters.sort(compare);
 
                             this.emit("stats", {
-                                guilds: this.stats.stats.guilds,
-                                users: this.stats.stats.users,
-                                voice: this.stats.stats.voice,
-                                exclusiveGuilds: this.stats.stats.exclusiveGuilds,
-                                largeGuilds: this.stats.stats.largeGuilds,
-                                totalRam: this.stats.stats.totalRam / 1000000,
-                                clusters: clusters
+								totalGuilds: this.stats.stats.totalGuilds,
+								totalUsers: this.stats.stats.totalUsers,
+								totalExclusiveGuilds: this.stats.stats.totalExclusiveGuilds,
+								totalLargeGuilds: this.stats.stats.totalLargeGuilds,
+								totalCounterUpdates: this.stats.stats.totalCounterUpdates,
+								totalRam: this.stats.stats.totalRam / 1000000,
+								totalShards: this.stats.stats.totalShards,
+								clusters: clusters
                             });
                         }
                         break;
@@ -396,15 +401,15 @@ class ClusterManager extends EventEmitter {
             this.queue.queueItem({
                 item: clusterID,
                 value: {
-                    id: clusterID,
-                    clusterCount: this.clusterCount,
-                    name: "connect",
-                    firstShardID: cluster.firstShardID,
-                    lastShardID: cluster.lastShardID,
-                    maxShards: this.shardCount,
-                    token: this.token,
-                    file: this.mainFile,
-                    clientOptions: this.clientOptions,
+					id: clusterID,
+					clusterCount: this.clusterCount,
+					name: "connect",
+					firstShardID: cluster.firstShardID,
+					lastShardID: cluster.lastShardID,
+					maxShards: this.shardCount,
+					token: this.token,
+					file: this.mainFile,
+					clientOptions: this.clientOptions
                 }
             });
         }
@@ -444,7 +449,7 @@ class ClusterManager extends EventEmitter {
                 margin: 2
             })
                 .emptyLine()
-                .right(`eris-sharder ${pkg.version}`)
+                .right(`eris-sharder for ServerStats`)
                 .emptyLine()
                 .render()
         );
@@ -478,17 +483,17 @@ class ClusterManager extends EventEmitter {
 
         this.queue.queueItem({
             item: clusterID, value: {
-                id: clusterID,
-                clusterCount: this.clusterCount,
-                name: "connect",
-                shards: shards,
-                firstShardID: cluster.firstShardID,
-                lastShardID: cluster.lastShardID,
-                maxShards: this.shardCount,
-                token: this.token,
-                file: this.mainFile,
-                clientOptions: this.clientOptions,
-                test: this.test
+				id: clusterID,
+				clusterCount: this.clusterCount,
+				name: "connect",
+				shards: shards,
+				firstShardID: cluster.firstShardID,
+				lastShardID: cluster.lastShardID,
+				maxShards: this.shardCount,
+				token: this.token,
+				file: this.mainFile,
+				clientOptions: this.clientOptions,
+				test: this.test
             }
         });
     }

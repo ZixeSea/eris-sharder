@@ -4,10 +4,10 @@
   "description": "A sharder for the discord eris library",
   "main": "./src/index.js",
   "dependencies": {
-    "asciiart-logo": "^0.2.6",
-    "colors": "^1.1.2",
-    "eris": "^0.13.1",
-    "time-stamp": "^2.2.0"
+    "asciiart-logo": "0.2.6",
+    "colors": "1.4.0",
+    "eris": "git://github.com/ZixeSea/eris.git#dev",
+    "time-stamp": "2.2.0"
   },
   "devDependencies": {
     "tui-jsdoc-template": "^1.2.2",

@@ -24,10 +24,8 @@ class Cluster {
 		this.mainFile = null;
 		this.clusterID = 0;
 		this.clusterCount = 0;
-		this.guilds = 0;
-		this.users = 0;
-		this.exclusiveGuilds = 0;
-		this.largeGuilds = 0;
+        this.guilds = 0;
+        this.unavailableGuilds = 0;
 		this.counterUpdates = 0;
 		this.clusterUptime = 0;
 		this.botUptime = 0;
@@ -86,12 +84,10 @@ class Cluster {
                     case "stats": {
                         process.send({
                             name: "stats", stats: {
-								guilds: this.guilds,
-								users: this.users,
+                                guilds: this.guilds,
+                                unavailableGuilds: this.unavailableGuilds,
 								ram: process.memoryUsage().rss,
 								shards: this.shards,
-								exclusiveGuilds: this.exclusiveGuilds,
-								largeGuilds: this.largeGuilds,
 								counterUpdates: this.counterUpdates,
 								clusterUptime: this.clusterUptime,
 								botUptime: this.botUptime,
@@ -274,10 +270,8 @@ class Cluster {
 
     startStats(bot) {
         setInterval(() => {
-			this.guilds = bot.guilds.size;
-			this.users = bot.users.size;
-			this.largeGuilds = bot.guilds.filter((g) => g.large).length;
-			this.exclusiveGuilds = bot.guilds.filter((g) => g.members.filter((m) => m.bot).length === 1).length;
+            this.guilds = bot.guilds.size;
+            this.unavailableGuilds = bot.unavailableGuilds.size;
 			if (this.counterUpdates === -1) {
 				bot.stats.counterUpdates = 0;
 			}

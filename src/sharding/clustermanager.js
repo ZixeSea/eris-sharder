@@ -59,10 +59,7 @@ class ClusterManager extends EventEmitter {
             this.stats = {
 				stats: {
 					guilds: 0,
-					users: 0,
 					totalRam: 0,
-					exclusiveGuilds: 0,
-					largeGuilds: 0,
 					counterUpdates: 0,
 					clusterUptime: 0,
 					botUptime: 0,
@@ -88,11 +85,8 @@ class ClusterManager extends EventEmitter {
         if (this.statsInterval != null) {
             setInterval(() => {
 				this.stats.stats.totalGuilds = 0;
-				this.stats.stats.totalUsers = 0;
 				this.stats.stats.totalRam = 0;
 				this.stats.stats.clusters = [];
-				this.stats.stats.totalExclusiveGuilds = 0;
-				this.stats.stats.totalLargeGuilds = 0;
 				this.stats.stats.totalCounterUpdates = 0;
 				this.stats.clustersCounted = 0;
 
@@ -238,12 +232,9 @@ class ClusterManager extends EventEmitter {
                         break;
                     case "stats":
 						this.stats.stats.totalGuilds += message.stats.guilds;
-						this.stats.stats.totalUsers += message.stats.users;
 						this.stats.stats.totalRam += message.stats.ram;
 						let ram = message.stats.ram / 1000000;
 						this.stats.stats.totalShards = this.shardCount;
-						this.stats.stats.totalExclusiveGuilds += message.stats.exclusiveGuilds;
-						this.stats.stats.totalLargeGuilds += message.stats.largeGuilds;
 						this.totalCounterUpdates += message.stats.counterUpdates;
 						this.stats.stats.totalCounterUpdates = this.totalCounterUpdates;
 						this.stats.stats.clusters.push({
@@ -251,9 +242,8 @@ class ClusterManager extends EventEmitter {
 							shards: message.stats.shards,
 							guilds: message.stats.guilds,
 							ram: ram,
-							exclusiveGuilds: message.stats.exclusiveGuilds,
-							largeGuilds: message.stats.largeGuilds,
-							clusterUptime: message.stats.clusterUptime,
+                            clusterUptime: message.stats.clusterUptime,
+                            unavailableGuilds: message.stats.unavailableGuilds,
 							botUptime: message.stats.botUptime,
 							shardsStats: message.stats.shardsStats
 						});
@@ -273,9 +263,6 @@ class ClusterManager extends EventEmitter {
 
                             this.emit("stats", {
 								totalGuilds: this.stats.stats.totalGuilds,
-								totalUsers: this.stats.stats.totalUsers,
-								totalExclusiveGuilds: this.stats.stats.totalExclusiveGuilds,
-								totalLargeGuilds: this.stats.stats.totalLargeGuilds,
 								totalCounterUpdates: this.stats.stats.totalCounterUpdates,
 								totalRam: this.stats.stats.totalRam / 1000000,
 								totalShards: this.stats.stats.totalShards,

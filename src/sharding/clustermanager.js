@@ -177,12 +177,6 @@ class ClusterManager extends EventEmitter {
 
                 logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
 
-                let embed = {
-                    title: `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`
-                }
-
-                this.sendWebhook("cluster", embed);
-
                 master.setupMaster({
                     silent: false
                 });
@@ -225,10 +219,8 @@ class ClusterManager extends EventEmitter {
                         }
                         break;
                     case "cluster":
-                        this.sendWebhook("cluster", message.embed);
                         break;
                     case "shard":
-                        this.sendWebhook("shard", message.embed);
                         break;
                     case "stats":
 						this.stats.stats.totalGuilds += message.stats.guilds;
@@ -407,23 +399,6 @@ class ClusterManager extends EventEmitter {
         }
     }
 
-    /**
-     * 
-     * 
-     * @param {any} type 
-     * @param {any} embed 
-     * @memberof ClusterManager
-     */
-    sendWebhook(type, embed) {
-        if (!this.webhooks || !this.webhooks[type]) return;
-        let id = this.webhooks[type].id;
-        let token = this.webhooks[type].token;
-        embed.timestamp = new Date();
-        if (id && token) {
-            this.eris.executeWebhook(id, token, { embeds: [embed] });
-        }
-    }
-
     printLogo() {
         const logo = require('asciiart-logo');
         console.log(
@@ -447,13 +422,6 @@ class ClusterManager extends EventEmitter {
         logger.warn("Cluster Manager", `cluster ${clusterID} died`);
 
         let cluster = this.clusters.get(clusterID);
-
-        let embed = {
-            title: `Cluster ${clusterID} died with code ${code}. Restarting...`,
-            description: `Shards ${cluster.firstShardID} - ${cluster.lastShardID}`
-        }
-
-        this.sendWebhook("cluster", embed);
 
         let shards = cluster.shardCount;
 

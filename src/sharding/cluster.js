@@ -195,29 +195,14 @@ class Cluster {
 
         bot.on("shardDisconnect", (err, id) => {
             process.send({ name: "log", msg: `Shard ${id} disconnected!` });
-            let embed = {
-                title: "Shard Status Update",
-                description: `Shard ${id} disconnected!`
-            }
-            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("shardReady", id => {
             process.send({ name: "log", msg: `Shard ${id} is ready!` });
-            let embed = {
-                title: "Shard Status Update",
-                description: `Shard ${id} is ready!`
-            }
-            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("shardResume", id => {
             process.send({ name: "log", msg: `Shard ${id} has resumed!` });
-            let embed = {
-                title: "Shard Status Update",
-                description: `Shard ${id} resumed!`
-            }
-            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("warn", (message, id) => {
@@ -236,11 +221,6 @@ class Cluster {
 
         bot.on("ready", id => {
             process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
-            let embed = {
-                title: `Cluster ${this.clusterID} is ready!`,
-                description: `Shards ${this.firstShardID} - ${this.lastShardID}`
-            }
-            process.send({ name: "cluster", embed: embed });
 
             process.send({ name: "shardsStarted" });
         });

@@ -90,7 +90,6 @@ class ClusterManager extends EventEmitter {
 				this.stats.stats.totalGuilds = 0;
 				this.stats.stats.totalUsers = 0;
 				this.stats.stats.totalRam = 0;
-				this.stats.stats.totalShards = 0;
 				this.stats.stats.clusters = [];
 				this.stats.stats.totalExclusiveGuilds = 0;
 				this.stats.stats.totalLargeGuilds = 0;
@@ -242,7 +241,7 @@ class ClusterManager extends EventEmitter {
 						this.stats.stats.totalUsers += message.stats.users;
 						this.stats.stats.totalRam += message.stats.ram;
 						let ram = message.stats.ram / 1000000;
-						this.stats.stats.totalShards += message.stats.shards;
+						this.stats.stats.totalShards = this.shardCount;
 						this.stats.stats.totalExclusiveGuilds += message.stats.exclusiveGuilds;
 						this.stats.stats.totalLargeGuilds += message.stats.largeGuilds;
 						this.totalCounterUpdates += message.stats.counterUpdates;

@@ -40,7 +40,7 @@ class Logger {
      */
 	log(source, msg) {
 		let message = colors.log(msg);
-        console.log(`${createSource(source)} | ${message}`);
+		console.log(`${createSource(source)} | ${message}`);
 	}
 
     /**
@@ -52,7 +52,7 @@ class Logger {
      */
 	info(source, msg) {
 		let message = colors.info(msg);
-        console.info(`${createSource(source)} | ${message}`);
+		console.info(`${createSource(source)} | ${message}`);
 	}
 
     /**
@@ -64,7 +64,7 @@ class Logger {
      */
 	warn(source, msg) {
 		let message = colors.warn(msg);
-        console.warn(`${createSource(source)} | ${message}`);
+		console.warn(`${createSource(source)} | ${message}`);
 	}
 
     /**
@@ -76,7 +76,7 @@ class Logger {
      */
 	error(source, msg) {
 		let message = colors.error(msg);
-        console.error(`${createSource(source)} | ${message}`);
+		console.error(`${createSource(source)} | ${message}`);
 	}
 
     /**
@@ -88,7 +88,7 @@ class Logger {
      */
 	data(source, msg) {
 		let message = colors.data(msg);
-        console.log(`${createSource(source)} | ${message}`);
+		console.log(`${createSource(source)} | ${message}`);
 	}
 
     /**
@@ -100,7 +100,7 @@ class Logger {
      */
 	debug(source, msg) {
 		let message = colors.debug(msg);
-        console.debug(`${createSource(source)} | ${message}`);
+		console.debug(`${createSource(source)} | ${message}`);
 	}
 }
 

@@ -50,8 +50,6 @@ class WebhookManager {
 					console.error(error);
 				});
 
-			console.log(messages);
-
 			if (messages.length === 0) {
 				delete this.requests[Object.keys(this.requests)[index]];
 			}

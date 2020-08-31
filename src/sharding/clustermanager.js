@@ -80,6 +80,7 @@ class ClusterManager extends EventEmitter {
 		if (this.statsInterval != null) {
 			setInterval(() => {
 				this.stats.stats.totalGuilds = 0;
+				this.stats.stats.totalUnavailableGuilds = 0;
 				this.stats.stats.totalRam = 0;
 				this.stats.stats.clusters = [];
 				this.stats.stats.totalCounterUpdates = 0;
@@ -221,6 +222,7 @@ class ClusterManager extends EventEmitter {
 						break;
 					case 'stats':
 						this.stats.stats.totalGuilds += message.stats.guilds;
+						this.stats.stats.totalUnavailableGuilds += message.stats.unavailableGuilds;
 						this.stats.stats.totalRam += message.stats.ram;
 						let ram = message.stats.ram / 1000000;
 						this.stats.stats.totalShards = this.shardCount;
@@ -250,6 +252,7 @@ class ClusterManager extends EventEmitter {
 
 							this.emit('stats', {
 								totalGuilds: this.stats.stats.totalGuilds,
+								totalUnavailableGuilds: this.stats.stats.totalUnavailableGuilds,
 								totalCounterUpdates: this.stats.stats.totalCounterUpdates,
 								totalRam: this.stats.stats.totalRam / 1000000,
 								totalShards: this.stats.stats.totalShards,

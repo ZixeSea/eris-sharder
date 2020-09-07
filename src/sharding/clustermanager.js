@@ -146,10 +146,12 @@ class ClusterManager extends EventEmitter {
 			let worker = master.fork();
 			this.clusters.set(clusterID, { workerID: worker.id });
 			this.workers.set(worker.id, clusterID);
-			logger.info('Cluster Manager', `Launching cluster ${clusterID}`);
-			clusterID += 1;
+			worker.once('online', () => {
+				logger.info('Cluster Manager', `Launched cluster ${clusterID}`);
+				clusterID += 1;
 
-			this.start(clusterID);
+				this.start(clusterID);
+			});
 		}
 	}
 

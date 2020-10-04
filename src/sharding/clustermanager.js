@@ -1,9 +1,11 @@
 const master = require('cluster');
 const cluster = require('./cluster.js');
-const numCPUs = require('os').cpus().length;
+const os = require('os');
+const numCPUs = os.cpus().length;
 const logger = require('../utils/logger.js');
 const EventEmitter = require('events');
 const Eris = require('eris');
+const { exec } = require('child_process');
 const Queue = require('../utils/queue.js');
 
 /**
@@ -280,7 +282,6 @@ class ClusterManager extends EventEmitter {
 						this.callbacks.set(message.memberID, clusterID);
 						break;
 					case 'fetchReturn':
-						console.log(message);
 						let callback = this.callbacks.get(message.value.id);
 
 						let cluster = this.clusters.get(callback);
@@ -440,30 +441,45 @@ class ClusterManager extends EventEmitter {
 		let shards = cluster.shardCount;
 
 		let newWorker = master.fork();
-
-		this.workers.delete(worker.id);
-
-		this.clusters.set(clusterID, Object.assign(cluster, { workerID: newWorker.id }));
-
-		this.workers.set(newWorker.id, clusterID);
-
-		logger.debug('Cluster Manager', `Restarting cluster ${clusterID}`);
-
-		this.queue.queueItem({
-			item: clusterID,
-			value: {
-				id: clusterID,
-				clusterCount: this.clusterCount,
-				name: 'connect',
-				shards: shards,
-				firstShardID: cluster.firstShardID,
-				lastShardID: cluster.lastShardID,
-				maxShards: this.shardCount,
-				token: this.token,
-				file: this.mainFile,
-				clientOptions: this.clientOptions,
-				test: this.test
+		let SpawnTimeOut = setTimeout(() => {
+			let DeadClusters = 0;
+			this.clusters.forEach((cluster) => {
+				if (!master.workers[cluster.workerID]) DeadClusters++;
+			});
+			if (DeadClusters === 3 && os.platform() === 'linux') {
+				logger.error('Cluster Manager', 'Server is restarting.')
+				exec('sudo apt update && sudo apt upgrade -y && reboot', (error) => {
+					if(error) logger.error('Cluster Manager', error)
+				});
 			}
+		}, 30000);
+
+		newWorker.once('online', () => {
+			this.workers.delete(worker.id);
+
+			this.clusters.set(clusterID, Object.assign(cluster, { workerID: newWorker.id }));
+
+			this.workers.set(newWorker.id, clusterID);
+
+			clearTimeout(SpawnTimeOut);
+			logger.debug('Cluster Manager', `Restarting cluster ${clusterID}`);
+
+			this.queue.queueItem({
+				item: clusterID,
+				value: {
+					id: clusterID,
+					clusterCount: this.clusterCount,
+					name: 'connect',
+					shards: shards,
+					firstShardID: cluster.firstShardID,
+					lastShardID: cluster.lastShardID,
+					maxShards: this.shardCount,
+					token: this.token,
+					file: this.mainFile,
+					clientOptions: this.clientOptions,
+					test: this.test
+				}
+			});
 		});
 	}
 
@@ -497,7 +513,9 @@ class ClusterManager extends EventEmitter {
 	broadcast(start, message) {
 		let cluster = this.clusters.get(start);
 		if (cluster) {
-			master.workers[cluster.workerID].send(message);
+			if(master.workers[cluster.workerID]) {
+				master.workers[cluster.workerID].send(message);
+			}
 			this.broadcast(start + 1, message);
 		}
 	}

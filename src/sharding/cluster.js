@@ -262,7 +262,8 @@ class Cluster {
 			this.bot.shards.forEach((shard) => {
 				this.shardsStats.push({
 					id: shard.id,
-					ready: shard.ready,
+                    ready: shard.ready,
+                    guilds: Object.keys(this.bot.guildShardMap).filter(k => this.bot.guildShardMap[k] === shard.id).length,
 					latency: shard.latency,
 					status: shard.status
 				});

@@ -39,10 +39,7 @@ class ClusterManager extends EventEmitter {
 		this.callbacks = new Map();
 		this.WebhookManager = require('../utils/WebhookManager');
 
-		this.options = {
-			stats: options.stats || false,
-			debug: options.debug || false
-		};
+		this.options = options;
 
 		this.statsInterval = options.statsInterval || 60 * 1000;
 		this.mainFile = mainFile;
@@ -200,9 +197,7 @@ class ClusterManager extends EventEmitter {
 						logger.log(`Cluster ${clusterID}`, `${message.msg}`);
 						break;
 					case 'debug':
-						if (this.options.debug) {
-							logger.debug(`Cluster ${clusterID}`, `${message.msg}`);
-						}
+						logger.debug(`Cluster ${clusterID}`, `${message.msg}`);
 						break;
 					case 'info':
 						logger.info(`Cluster ${clusterID}`, `${message.msg}`);
@@ -447,10 +442,23 @@ class ClusterManager extends EventEmitter {
 				if (!master.workers[cluster.workerID]) DeadClusters++;
 			});
 			if (DeadClusters === 3 && os.platform() === 'linux') {
-				logger.error('Cluster Manager', 'Server is restarting.')
-				exec('sudo apt update && sudo apt upgrade -y && reboot', (error) => {
-					if(error) logger.error('Cluster Manager', error)
+				logger.error('Cluster Manager', 'Server is restarting.');
+				this.WebhookManager.Post(this.options.webhooks.cluster, {
+					title: 'Server restarting!',
+					description:
+						'Server is rebooting because it has detected some issues.\nThe status page could be unavailable for sometime.\n',
+					url: 'https://serverstatsbot.com/status',
+					color: 16711680,
+					timestamp: new Date(),
+					footer: {
+						text: `Server: ${this.options.ServerOptions.name}`
+					}
 				});
+				setTimeout(() => {
+					exec('sudo apt update && sudo apt upgrade -y && reboot', (error) => {
+						if (error) logger.error('Cluster Manager', error);
+					});
+				}, 15000);
 			}
 		}, 30000);
 
@@ -513,7 +521,7 @@ class ClusterManager extends EventEmitter {
 	broadcast(start, message) {
 		let cluster = this.clusters.get(start);
 		if (cluster) {
-			if(master.workers[cluster.workerID]) {
+			if (master.workers[cluster.workerID]) {
 				master.workers[cluster.workerID].send(message);
 			}
 			this.broadcast(start + 1, message);

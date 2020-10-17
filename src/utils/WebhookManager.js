@@ -3,7 +3,7 @@ const axios = require('axios');
 class WebhookManager {
 	constructor() {
 		this.requests = {};
-		this.timeout = null;
+		this.timeout = { t: null, ms: 0 };
 	}
 	Post(url, message) {
 		if (!typeof url === 'string') {
@@ -13,24 +13,14 @@ class WebhookManager {
 			throw new Error(`expected message(string/object), got ${typeof url}.`);
 		}
 
-		if (this.requests[url]) {
-			this.requests[url].push(message);
-		} else {
-			this.requests[url] = [ message ];
-		}
-		if (!this.timeout) {
-			this.ExecuteRequests();
-			this.timeout = Date.now() + 10000;
-		} else {
-			if (this.timeout - Date.now() < 1) {
-				this.ExecuteRequests();
-				this.timeout = Date.now() + 10000;
-			} else
-				setTimeout(() => {
-					this.ExecuteRequests();
-					this.timeout = Date.now() + 10000;
-				}, this.timeout - Date.now());
-		}
+		if (this.requests[url]) this.requests[url].push(message);
+		else this.requests[url] = [ message ];
+
+		if (!this.timeout.t || this.timeout.t._called) {
+			this.timeout.t = setTimeout(() => this.ExecuteRequests(), this.timeout.ms - Date.now() < 1 ? 1400 : this.timeout.ms - Date.now());
+
+			this.timeout.ms = Date.now() + 10000;
+		} 
 	}
 	ExecuteRequests() {
 		for (let index = 0; index < Object.keys(this.requests).length; index++) {

@@ -10,7 +10,7 @@ class WebhookManager {
 			throw new Error(`expected URL(string), got ${typeof url}.`);
 		}
 		if (!typeof message === 'string' && !typeof message === 'object') {
-			throw new Error(`expected message(string/object), got ${typeof url}.`);
+			throw new Error(`expected message(object), got ${typeof message}.`);
 		}
 
 		if (this.requests[url]) this.requests[url].push(message);
@@ -44,7 +44,11 @@ class WebhookManager {
 				delete this.requests[Object.keys(this.requests)[index]];
 			}
 		}
-		return;
+
+		if (Object.keys(this.requests)[0] && (!this.timeout.t || this.timeout.t._called)) {
+			this.timeout.t = setTimeout(() => this.ExecuteRequests(), this.timeout.ms - Date.now() < 1 ? 1500 : this.timeout.ms - Date.now());
+			this.timeout.ms = Date.now() + 10000;
+		}
 	}
 }
 

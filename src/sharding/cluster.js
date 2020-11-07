@@ -23,7 +23,9 @@ class Cluster {
 		this.lastShardID = 0;
 		this.mainFile = null;
 		this.clusterID = 0;
-		this.clusterCount = 0;
+        this.clusterCount = 0;
+        this.fastBoot = false;
+        this.concurrency = null;
         this.guilds = 0;
         this.unavailableGuilds = 0;
 		this.counterUpdates = 0;
@@ -68,6 +70,8 @@ class Cluster {
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
                         this.clusterCount = msg.clusterCount;
+                        this.fastBoot = msg.fastBoot;
+                        this.concurrency = msg.concurrency;
                         this.shards = (this.lastShardID - this.firstShardID) + 1;
                         this.maxShards = msg.maxShards;
 
@@ -196,6 +200,15 @@ class Cluster {
         bot.on("shardDisconnect", (err, id) => {
             process.send({ name: "log", msg: `Shard ${id} disconnected${!err ? '' : `, reason: ${err.message}`}!` });
         });
+
+        if(this.fastBoot) {
+            bot.once("shardReady", id => {
+                if (this.clusterID <= this.concurrency) {
+                    process.send({ name: "warn", msg: `Cluster ${this.clusterID} | Fast boot has been trigger for this cluster.` });
+                    process.send({ name: "shardsStarted" });
+                }
+            });
+        }
 
         bot.on("shardReady", id => {
             process.send({ name: "log", msg: `Shard ${id} is ready!` });

@@ -29,6 +29,8 @@ class ClusterManager extends EventEmitter {
 		this.firstShardID = options.firstShardID || 0;
 		this.lastShardID = options.lastShardID || this.shardCount - 1;
 		this.clusterCount = options.clusters || numCPUs;
+		this.fastBoot = options.fastBoot || false;
+		this.concurrency = options.concurrency || 4;
 		this.clusterTimeout = options.clusterTimeout * 1000 || 5000;
 
 		this.token = token || false;
@@ -394,6 +396,8 @@ class ClusterManager extends EventEmitter {
 					name: 'connect',
 					firstShardID: cluster.firstShardID,
 					lastShardID: cluster.lastShardID,
+					fastBoot: this.fastBoot,
+					concurrency: this.concurrency,
 					maxShards: this.shardCount,
 					token: this.token,
 					file: this.mainFile,
@@ -481,6 +485,8 @@ class ClusterManager extends EventEmitter {
 					shards: shards,
 					firstShardID: cluster.firstShardID,
 					lastShardID: cluster.lastShardID,
+					fastBoot: this.fastBoot,
+					concurrency: this.concurrency,
 					maxShards: this.shardCount,
 					token: this.token,
 					file: this.mainFile,

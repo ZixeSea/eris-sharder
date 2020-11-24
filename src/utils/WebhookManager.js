@@ -2,53 +2,48 @@ const axios = require('axios');
 
 class WebhookManager {
 	constructor() {
-		this.requests = {};
-		this.timeout = { t: null, ms: 0 };
+		this.requests = new Map();
+		this.timeout;
 	}
 	Post(url, message) {
 		if (!typeof url === 'string') {
 			throw new Error(`expected URL(string), got ${typeof url}.`);
 		}
-		if (!typeof message === 'string' && !typeof message === 'object') {
+		if (!typeof message === 'object') {
 			throw new Error(`expected message(object), got ${typeof message}.`);
 		}
 
-		if (this.requests[url]) this.requests[url].push(message);
-		else this.requests[url] = [ message ];
+		if (this.requests.get(url)) {
+			this.requests.get(url).embeds.push(message);
+		} else this.requests.set(url, { embeds: [ message ], endpoint: url });
 
-		if (!this.timeout.t || this.timeout.t._called) {
-			this.timeout.t = setTimeout(() => this.ExecuteRequests(), this.timeout.ms - Date.now() < 1 ? 1400 : this.timeout.ms - Date.now());
-
-			this.timeout.ms = Date.now() + 10000;
-		} 
+		if (!this.timeout) this.timeout = setTimeout(() => this.ExecuteRequests(), 10000);
 	}
 	ExecuteRequests() {
-		for (let index = 0; index < Object.keys(this.requests).length; index++) {
-			const messages = this.requests[Object.keys(this.requests)[index]].splice(0, 5);
+		this.timeout = null;
 
-			if (messages[0])
+		this.requests.forEach((request) => {
+			const embeds = request.embeds.splice(0, 5);
+
+			if (embeds[0]) {
 				axios({
-					url: Object.keys(this.requests)[index],
+					url: request.endpoint,
 					method: 'POST',
 					headers: {
 						'content-Type': 'application/json'
 					},
 					data: JSON.stringify({
-						embeds: messages
+						embeds: embeds
 					})
 				}).catch((error) => {
 					console.error(error);
 				});
-
-			if (messages.length === 0) {
-				delete this.requests[Object.keys(this.requests)[index]];
 			}
-		}
 
-		if (Object.keys(this.requests)[0] && (!this.timeout.t || this.timeout.t._called)) {
-			this.timeout.t = setTimeout(() => this.ExecuteRequests(), this.timeout.ms - Date.now() < 1 ? 1500 : this.timeout.ms - Date.now());
-			this.timeout.ms = Date.now() + 10000;
-		}
+			if (request.embeds.length === 0) {
+				this.requests.delete(request.endpoint);
+			} else if(!this.timeout) this.timeout = setTimeout(() => this.ExecuteRequests(), 10000);
+		});
 	}
 }
 

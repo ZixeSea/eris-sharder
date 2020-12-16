@@ -39,7 +39,6 @@ class ClusterManager extends EventEmitter {
 		this.workers = new Map();
 		this.queue = new Queue();
 		this.callbacks = new Map();
-		this.WebhookManager = require('../utils/WebhookManager');
 
 		this.options = options;
 
@@ -299,7 +298,10 @@ class ClusterManager extends EventEmitter {
 						this.sendTo(message.cluster, message.msg);
 						break;
 					case 'WebhookPOST':
-						if (message.url && message.message) this.WebhookManager.Post(message.url, message.message);
+						if(message.url && message.message) {
+							const url = '/' + new URL(message.url).pathname.split('/').slice(2).join("/")
+							this.eris.requestHandler.request("POST", url, false, message.message).catch(err => console.log(err))
+						};
 						break;
 					case 'apiRequest':
 						let response;
@@ -447,17 +449,6 @@ class ClusterManager extends EventEmitter {
 			});
 			if (DeadClusters === 3 && os.platform() === 'linux') {
 				logger.error('Cluster Manager', 'Server is restarting.');
-				this.WebhookManager.Post(this.options.webhooks.cluster, {
-					title: 'Server restarting!',
-					description:
-						'Server is rebooting because it has detected some issues.\nThe status page could be unavailable for sometime.\n',
-					url: 'https://serverstatsbot.com/status',
-					color: 16711680,
-					timestamp: new Date(),
-					footer: {
-						text: `Server: ${this.options.ServerOptions.name}`
-					}
-				});
 				setTimeout(() => {
 					exec('sudo apt update && sudo apt upgrade -y && reboot', (error) => {
 						if (error) logger.error('Cluster Manager', error);

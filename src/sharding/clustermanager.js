@@ -7,6 +7,8 @@ const EventEmitter = require('events');
 const Eris = require('eris');
 const { exec } = require('child_process');
 const Queue = require('../utils/queue.js');
+const svn = require("../../package.json").version || "Unknown";
+const evn = require("../../../eris/package.json").version || "Unknown";
 
 /**
  * 
@@ -426,8 +428,9 @@ class ClusterManager extends EventEmitter {
 				margin: 2
 			})
 				.emptyLine()
-				.right(`eris-sharder for ServerStats`)
-				.emptyLine()
+				.right("Made for ServerStats")
+				.right(`Eris version | ${evn}`)
+				.right(`Sharder version | ${svn}`)
 				.render()
 		);
 	}

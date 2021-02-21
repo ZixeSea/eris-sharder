@@ -198,7 +198,7 @@ class Cluster {
         });
 
         bot.on("shardDisconnect", (err, id) => {
-            process.send({ name: "log", msg: `Shard ${id} disconnected${!err ? '' : `, reason: ${err.message}`}!` });
+            process.send({ name: "log", msg: `Shard ${id} disconnected, reason: ${!err ? 'Unknown' : err.message}!` });
         });
 
         if(this.fastBoot) {

@@ -223,7 +223,7 @@ class Cluster {
         });
 
         bot.on("error", (error, id) => {
-            process.send({ name: "error", msg: `Shard ${id} | ${error.stack}` });
+            process.send({ name: "error", msg: `Shard ${id} | ${error.message}` });
         });
 
         bot.once("ready", id => {

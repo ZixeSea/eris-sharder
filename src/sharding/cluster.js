@@ -34,7 +34,6 @@ class Cluster {
 		this.shardsStats = [];
 		this.app = null;
 		this.bot = null;
-		this.test = false;
 
         this.ipc = new IPC();
 
@@ -77,12 +76,10 @@ class Cluster {
                         this.concurrency = msg.concurrency;
                         this.shards = (this.lastShardID - this.firstShardID) + 1;
                         this.maxShards = msg.maxShards;
+                        this.processName = msg.processName;
 
                         if (this.shards < 1) return;
 
-                        if (msg.test) {
-                            this.test = true;
-                        }
 
                         this.connect(msg.firstShardID, msg.lastShardID, this.maxShards, msg.token, "connect", msg.clientOptions);
 
@@ -181,7 +178,7 @@ class Cluster {
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
         process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s)` });
 
-        let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
+        let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards, processName: this.processName };
         let optionss = Object.keys(options);
         optionss.forEach(key => {
             delete clientOptions[key];
@@ -241,12 +238,7 @@ class Cluster {
             process.send({ name: "shardsStarted" });
         });
 
-        if (!this.test) {
-            bot.connect();
-        } else {
-            process.send({ name: "shardsStarted" });
-            this.loadCode(bot);
-        }
+        bot.connect();
     }
 
     loadCode(bot) {

@@ -162,7 +162,7 @@ class ClusterManager extends EventEmitter {
      * 
      * @memberof ClusterManager
      */
-	launch(test) {
+	launch() {
 		if (master.isMaster) {
 			process.on('uncaughtException', (err) => {
 				logger.error('Cluster Manager', err.stack);
@@ -405,7 +405,8 @@ class ClusterManager extends EventEmitter {
 					maxShards: this.shardCount,
 					token: this.token,
 					file: this.mainFile,
-					clientOptions: this.clientOptions
+					clientOptions: this.clientOptions,
+					processName: this.name
 				}
 			});
 		}
@@ -485,7 +486,7 @@ class ClusterManager extends EventEmitter {
 					token: this.token,
 					file: this.mainFile,
 					clientOptions: this.clientOptions,
-					test: this.test
+					processName: this.name
 				}
 			});
 		});

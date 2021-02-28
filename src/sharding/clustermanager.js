@@ -121,7 +121,7 @@ class ClusterManager extends EventEmitter {
      */
 	start(clusterID) {
 		if (clusterID === this.clusterCount) {
-			logger.info('Cluster Manager', 'Clusters have been launched!');
+			logger.info('Cluster Manager', 'Clusters have been launched');
 
 			let shards = [];
 
@@ -171,7 +171,7 @@ class ClusterManager extends EventEmitter {
 			this.printLogo();
 
 			process.nextTick(async () => {
-				logger.info('General', 'Cluster Manager has started!');
+				logger.info('General', 'Cluster Manager has started');
 
 				let shards = await this.calculateShards();
 
@@ -451,7 +451,7 @@ class ClusterManager extends EventEmitter {
 				if (!master.workers[cluster.workerID]) DeadClusters++;
 			});
 			if (DeadClusters === 3 && os.platform() === 'linux') {
-				logger.error('Cluster Manager', 'Server is restarting.');
+				logger.error('Cluster Manager', 'Server is restarting');
 				setTimeout(() => {
 					exec('sudo apt update && sudo apt upgrade -y && reboot', (error) => {
 						if (error) logger.error('Cluster Manager', error);

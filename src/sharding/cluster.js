@@ -53,15 +53,15 @@ class Cluster {
 
     spawn() {
         process.on('uncaughtException', (err) => {
-            process.send({ name: "error", msg: `Uncaught exception at, reason:  ${err.stack}.` });
+            process.send({ name: "error", msg: `Uncaught exception at, reason:  ${err.stack}` });
         });
 
         process.on('unhandledRejection', (reason, p) => {
-            process.send({ name: "error", msg: `Unhandled rejection at, promise: ${p} (reason:  ${reason.stack}).` });
+            process.send({ name: "error", msg: `Unhandled rejection at, promise: ${p} (reason:  ${reason.stack})` });
         });
 
         process.on('warning', (warn) => {
-            process.send({ name: "warn", msg: `Warning at, reason: ${warn.stack}.` });
+            process.send({ name: "warn", msg: `Warning at, reason: ${warn.stack}` });
         });
 
         process.on("message", msg => {
@@ -179,7 +179,7 @@ class Cluster {
      * @memberof Cluster
      */
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
-        process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s).` });
+        process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s)` });
 
         let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
         let optionss = Object.keys(options);
@@ -197,28 +197,28 @@ class Cluster {
         });
 
         bot.on("connect", id => {
-            process.send({ name: "log", msg: `Shard ${id} established a connection.` });
+            process.send({ name: "log", msg: `Shard ${id} established a connection` });
         });
 
         bot.on("shardDisconnect", (err, id) => {
-            process.send({ name: "log", msg: `Shard ${id} disconnected, reason: ${!err ? 'Reconnect request from gateway' : err.message}!` });
+            process.send({ name: "log", msg: `Shard ${id} has been disconnected${!err ? '' : `, reason: ${err.message}`}` });
         });
 
         if(this.fastBoot) {
             bot.once("shardReady", id => {
                 if (this.clusterID <= this.concurrency) {
-                    process.send({ name: "warn", msg: `Cluster ${this.clusterID} | Fast boot has been trigger for this cluster.` });
+                    process.send({ name: "warn", msg: `Cluster ${this.clusterID} | Fast boot has been trigger for this cluster` });
                     process.send({ name: "shardsStarted" });
                 }
             });
         }
 
         bot.on("shardReady", id => {
-            process.send({ name: "log", msg: `Shard ${id} is ready.` });
+            process.send({ name: "log", msg: `Shard ${id} is ready` });
         });
 
         bot.on("shardResume", id => {
-            process.send({ name: "log", msg: `Shard ${id} has been resumed.` });
+            process.send({ name: "log", msg: `Shard ${id} has been resumed` });
         });
 
         bot.on("warn", (message, id) => {
@@ -236,7 +236,7 @@ class Cluster {
         });
 
         bot.on("ready", id => {
-            process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are now ready.` });
+            process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are now ready` });
 
             process.send({ name: "shardsStarted" });
         });

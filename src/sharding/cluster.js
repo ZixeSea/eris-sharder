@@ -53,13 +53,16 @@ class Cluster {
 
     spawn() {
         process.on('uncaughtException', (err) => {
-            process.send({ name: "error", msg: err.stack });
+            process.send({ name: "error", msg: `Uncaught exception at, reason:  ${err.stack}.` });
         });
 
         process.on('unhandledRejection', (reason, p) => {
-            process.send({ name: "error", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
+            process.send({ name: "error", msg: `Unhandled rejection at, promise: ${p} (reason:  ${reason.stack}).` });
         });
 
+        process.on('warning', (warn) => {
+            process.send({ name: "warn", msg: `Warning at, reason: ${warn.stack}.` });
+        });
 
         process.on("message", msg => {
             if (msg.name) {
@@ -176,7 +179,7 @@ class Cluster {
      * @memberof Cluster
      */
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
-        process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s)` });
+        process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s).` });
 
         let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
         let optionss = Object.keys(options);
@@ -194,11 +197,11 @@ class Cluster {
         });
 
         bot.on("connect", id => {
-            process.send({ name: "log", msg: `Shard ${id} established connection!` });
+            process.send({ name: "log", msg: `Shard ${id} established a connection.` });
         });
 
         bot.on("shardDisconnect", (err, id) => {
-            process.send({ name: "log", msg: `Shard ${id} disconnected, reason: ${!err ? 'Unknown' : err.message}!` });
+            process.send({ name: "log", msg: `Shard ${id} has been disconnected${!err ? '' : `, reason: ${err.message}`}.` });
         });
 
         if(this.fastBoot) {
@@ -211,11 +214,11 @@ class Cluster {
         }
 
         bot.on("shardReady", id => {
-            process.send({ name: "log", msg: `Shard ${id} is ready!` });
+            process.send({ name: "log", msg: `Shard ${id} is ready.` });
         });
 
         bot.on("shardResume", id => {
-            process.send({ name: "log", msg: `Shard ${id} has resumed!` });
+            process.send({ name: "log", msg: `Shard ${id} has been resumed.` });
         });
 
         bot.on("warn", (message, id) => {
@@ -223,7 +226,7 @@ class Cluster {
         });
 
         bot.on("error", (error, id) => {
-            process.send({ name: "error", msg: `Shard ${id} | ${error.message}` });
+            process.send({ name: "error", msg: `Shard ${id} | ${error.message} ${!error.code ? '' : `(${error.code})`}` });
         });
 
         bot.once("ready", id => {
@@ -233,7 +236,7 @@ class Cluster {
         });
 
         bot.on("ready", id => {
-            process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
+            process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are now ready.` });
 
             process.send({ name: "shardsStarted" });
         });

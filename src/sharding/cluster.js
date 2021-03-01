@@ -211,7 +211,7 @@ class Cluster {
         }
 
         bot.on("shardReady", id => {
-            process.send({ name: "log", msg: `Shard ${id} is ready` });
+            process.send({ name: "log", msg: `Shard ${id} is operational` });
         });
 
         bot.on("shardResume", id => {

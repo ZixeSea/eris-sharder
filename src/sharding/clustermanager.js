@@ -430,8 +430,8 @@ class ClusterManager extends EventEmitter {
             })
                 .emptyLine()
                 .center(`Eris (V${evn})`)
-                .center(`Sharder (V${evn})`)
-                .center(`ServerStats (V${ssvn})`)
+                .center(`Sharder (V${svn})`)
+                .center(`${this.name} (V${ssvn})`)
                 .render()
 		);
 	}
